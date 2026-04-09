@@ -204,7 +204,9 @@ const filteredTasks = computed(() => {
       const taskSprintID = String(task.sprint_id || '').trim()
       const inBacklog = getColumnKind(task.column_id) === 'backlog'
 
-      if (!sprintId) return false
+      if (!sprintId) {
+        return !taskSprintID && inBacklog
+      }
       if (sprintId === 'none') {
         return !taskSprintID && inBacklog
       }
@@ -780,16 +782,26 @@ async function saveTaskEdit(taskId) {
   if (editTaskForm.taskId !== taskId) return
   const title = editTaskForm.title.trim()
   if (!title) return
+  const sourceTask = state.tasks.find((item) => item.id === taskId)
+  const sourceSprintID = String(sourceTask?.sprint_id || '').trim()
+  const targetSprintID = isScrumBoard.value && canManageSprint.value
+    ? String(editTaskForm.sprintId || '').trim()
+    : sourceSprintID
 
   await run(async () => {
+    if (isScrumBoard.value && sourceSprintID !== targetSprintID) {
+      if (targetSprintID) {
+        await request(`/api/v1/sprints/${targetSprintID}/tasks/${taskId}`, 'POST')
+      } else if (sourceSprintID) {
+        await request(`/api/v1/sprints/${sourceSprintID}/tasks/${taskId}`, 'DELETE')
+      }
+    }
+
     const body = {
       title,
       description: editTaskForm.description.trim(),
       assignee: normalizeAssigneeValue(editTaskForm.assignee),
       due_date: editTaskForm.dueDate
-    }
-    if (isScrumBoard.value) {
-      body.sprint_id = editTaskForm.sprintId || ''
     }
 
     await request(`/api/v1/tasks/${taskId}`, 'PATCH', body)

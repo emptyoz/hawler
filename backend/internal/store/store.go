@@ -33,6 +33,7 @@ var (
 	ErrTaskAlreadyInSprint    = errors.New("task is already in sprint")
 	ErrTaskNotInSprint        = errors.New("task is not in sprint")
 	ErrSprintRequiredForTask  = errors.New("sprint is required for non-backlog scrum task")
+	ErrBacklogTaskHasSprint   = errors.New("backlog task cannot have sprint_id")
 )
 
 type Store struct {
@@ -178,6 +179,26 @@ func resolveNextSprintBinding(boardType, targetStatus, currentSprintID string, t
 	default:
 		return sql.NullString{}, nil
 	}
+}
+
+func validateSprintBindingForTaskUpdate(boardType, columnKind string, sprintID *string) error {
+	if boardType != "scrum" {
+		return nil
+	}
+
+	nextSprintID := normalizedOptionalID(sprintID)
+	if columnKind == "backlog" {
+		if nextSprintID != "" {
+			return ErrBacklogTaskHasSprint
+		}
+		return nil
+	}
+
+	if nextSprintID == "" {
+		return ErrSprintRequiredForTask
+	}
+
+	return nil
 }
 
 func New(databaseURL string) (*Store, error) {
@@ -1755,6 +1776,25 @@ func (s *Store) UpdateTaskFields(ctx context.Context, taskID string, input Updat
 	sets := make([]string, 0, 5)
 	args := make([]any, 0, 8)
 	argPos := 1
+
+	if input.SprintIDSet {
+		var boardType string
+		var columnKind sql.NullString
+		if err := s.db.QueryRowContext(
+			ctx,
+			`SELECT b.type, bc.kind
+			 FROM tasks t
+			 JOIN boards b ON b.id = t.board_id
+			 LEFT JOIN board_columns bc ON bc.id = t.column_id
+			 WHERE t.id = $1`,
+			taskID,
+		).Scan(&boardType, &columnKind); err != nil {
+			return Task{}, err
+		}
+		if err := validateSprintBindingForTaskUpdate(boardType, columnKind.String, input.SprintID); err != nil {
+			return Task{}, err
+		}
+	}
 
 	if input.Title != nil {
 		sets = append(sets, fmt.Sprintf("title = $%d", argPos))

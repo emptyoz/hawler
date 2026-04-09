@@ -230,13 +230,16 @@ function targetSprintsForTask(task, sprints) {
                   </option>
                 </select>
                 <input v-model="editTaskForm.dueDate" type="date" />
-                <select v-if="isScrumBoard" v-model="editTaskForm.sprintId">
+                <select v-if="isScrumBoard" v-model="editTaskForm.sprintId" :disabled="!canManageSprint">
                   <option value="">Без спринта</option>
                   <option v-for="sprint in state.sprints" :key="sprint.id" :value="sprint.id">
                     {{ sprint.name }}
                   </option>
                 </select>
-                <p v-if="isScrumBoard" class="field-help">Задача учитывается в отчете только с выбранным спринтом.</p>
+                <p v-if="isScrumBoard" class="field-help">
+                  Задача учитывается в отчете только с выбранным спринтом.
+                  <span v-if="!canManageSprint"> Назначать и снимать спринт могут только владелец и наставник.</span>
+                </p>
                 <div class="task-edit-actions">
                   <button class="primary-btn" @click="saveTaskEdit(task.id)" :disabled="!editTaskForm.title.trim()">
                     Сохранить

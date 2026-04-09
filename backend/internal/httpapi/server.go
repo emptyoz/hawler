@@ -1399,6 +1399,14 @@ func (s *Server) patchTask(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusNotFound, "task not found")
 			return
 		}
+		if errors.Is(err, store.ErrSprintRequiredForTask) {
+			writeError(w, http.StatusBadRequest, "sprint is required for non-backlog scrum task")
+			return
+		}
+		if errors.Is(err, store.ErrBacklogTaskHasSprint) {
+			writeError(w, http.StatusBadRequest, "backlog task cannot have sprint_id")
+			return
+		}
 		if isFKError(err) {
 			writeError(w, http.StatusBadRequest, "invalid sprint_id")
 			return

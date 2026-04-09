@@ -130,3 +130,57 @@ func TestValidateRemoveTaskFromSprint(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateSprintBindingForTaskUpdate(t *testing.T) {
+	tests := []struct {
+		name       string
+		boardType  string
+		columnKind string
+		sprintID   *string
+		wantErr    error
+	}{
+		{
+			name:       "kanban allows empty sprint",
+			boardType:  "kanban",
+			columnKind: "todo",
+			sprintID:   nil,
+		},
+		{
+			name:       "scrum backlog allows empty sprint",
+			boardType:  "scrum",
+			columnKind: "backlog",
+			sprintID:   nil,
+		},
+		{
+			name:       "scrum backlog rejects sprint",
+			boardType:  "scrum",
+			columnKind: "backlog",
+			sprintID:   strPtr("sprint-a"),
+			wantErr:    ErrBacklogTaskHasSprint,
+		},
+		{
+			name:       "scrum non backlog requires sprint",
+			boardType:  "scrum",
+			columnKind: "todo",
+			sprintID:   nil,
+			wantErr:    ErrSprintRequiredForTask,
+		},
+		{
+			name:       "scrum non backlog accepts sprint",
+			boardType:  "scrum",
+			columnKind: "in_progress",
+			sprintID:   strPtr("sprint-a"),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			err := validateSprintBindingForTaskUpdate(tt.boardType, tt.columnKind, tt.sprintID)
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("validateSprintBindingForTaskUpdate() error = %v, want %v", err, tt.wantErr)
+			}
+		})
+	}
+}
