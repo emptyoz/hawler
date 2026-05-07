@@ -676,9 +676,9 @@ func (s *Server) createBoardColumn(w http.ResponseWriter, r *http.Request) {
 }
 
 type patchBoardColumnRequest struct {
-	Name     *string `json:"name"`
-	Kind     *string `json:"kind"`
-	Position *int    `json:"position"`
+	Name *string `json:"name"`
+
+	Position *int `json:"position"`
 }
 
 func (s *Server) patchBoardColumn(w http.ResponseWriter, r *http.Request) {
@@ -732,14 +732,7 @@ func (s *Server) patchBoardColumn(w http.ResponseWriter, r *http.Request) {
 		}
 		input.Name = &name
 	}
-	if req.Kind != nil {
-		kind := normalizeColumnKind(*req.Kind)
-		if kind == "" {
-			writeError(w, http.StatusBadRequest, "kind cannot be empty")
-			return
-		}
-		input.Kind = &kind
-	}
+
 	if req.Position != nil {
 		input.Position = req.Position
 	}
@@ -1293,7 +1286,7 @@ func (s *Server) createTask(w http.ResponseWriter, r *http.Request) {
 		sprintID,
 		req.Title,
 		req.Description,
-		column.Kind,
+
 		req.Assignee,
 		dueDate,
 		req.Position,

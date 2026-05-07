@@ -130,7 +130,6 @@ type UpdateTaskInput struct {
 
 type UpdateBoardColumnInput struct {
 	Name     *string
-	Kind     *string
 	Position *int
 }
 
@@ -279,7 +278,7 @@ func (s *Store) CreateWorkspace(ctx context.Context, name, ownerUserID string) (
 	if err != nil {
 		return Workspace{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var w Workspace
 	err = tx.QueryRowContext(ctx,
@@ -495,7 +494,7 @@ func (s *Store) CreateBoard(ctx context.Context, projectID, name, boardType stri
 	if err != nil {
 		return Board{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var b Board
 	err = tx.QueryRowContext(ctx,
@@ -666,7 +665,7 @@ func (s *Store) CreateBoardColumn(ctx context.Context, boardID, name, kind strin
 	if err != nil {
 		return BoardColumn{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	if position < 0 {
 		position = 0
@@ -718,7 +717,7 @@ func (s *Store) UpdateBoardColumn(
 	if err != nil {
 		return BoardColumn{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var current BoardColumn
 	err = tx.QueryRowContext(ctx,
@@ -731,7 +730,7 @@ func (s *Store) UpdateBoardColumn(
 	if err != nil {
 		return BoardColumn{}, err
 	}
-	if current.Kind == "backlog" && (input.Name != nil || input.Kind != nil || input.Position != nil) {
+	if current.Kind == "backlog" && (input.Name != nil || input.Position != nil) {
 		return BoardColumn{}, ErrCannotModifyBacklog
 	}
 
@@ -740,9 +739,6 @@ func (s *Store) UpdateBoardColumn(
 		targetName = *input.Name
 	}
 	targetKind := current.Kind
-	if input.Kind != nil {
-		targetKind = *input.Kind
-	}
 	targetPosition := current.Position
 	if input.Position != nil {
 		targetPosition = *input.Position
@@ -827,7 +823,7 @@ func (s *Store) DeleteBoardColumn(ctx context.Context, boardID, columnID string,
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var current BoardColumn
 	err = tx.QueryRowContext(ctx,
@@ -1033,7 +1029,7 @@ func (s *Store) StartSprint(ctx context.Context, sprintID string) (Sprint, error
 	if err != nil {
 		return Sprint{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var boardID string
 	var boardType string
@@ -1105,7 +1101,7 @@ func (s *Store) CloseSprint(ctx context.Context, sprintID string) (SprintCloseRe
 	if err != nil {
 		return SprintCloseResult{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var boardID string
 	var boardType string
@@ -1259,7 +1255,7 @@ func (s *Store) AddTaskToSprint(ctx context.Context, sprintID, taskID string) (T
 	if err != nil {
 		return Task{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var boardID string
 	var boardType string
@@ -1348,7 +1344,7 @@ func (s *Store) RemoveTaskFromSprint(ctx context.Context, sprintID, taskID strin
 	if err != nil {
 		return Task{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var boardID string
 	var boardType string
@@ -1636,7 +1632,6 @@ func (s *Store) CreateTask(
 	sprintID *string,
 	title string,
 	description string,
-	status string,
 	assignee string,
 	dueDate *time.Time,
 	position int,
@@ -1645,7 +1640,7 @@ func (s *Store) CreateTask(
 	if err != nil {
 		return Task{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var boardType string
 	if err := tx.QueryRowContext(ctx,
@@ -1682,11 +1677,10 @@ func (s *Store) CreateTask(
 			columnKind = "backlog"
 			sprintID = nil
 		} else if columnKind == "backlog" {
-			// Backlog tasks are global and cannot be bound to any sprint.
 			sprintID = nil
 		}
 	}
-	status = columnKind
+	status := columnKind
 
 	if position < 0 {
 		position = 0
@@ -1862,7 +1856,7 @@ func (s *Store) MoveTask(ctx context.Context, taskID, targetColumnID string, tar
 	if err != nil {
 		return Task{}, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var current Task
 	var rawColumnID sql.NullString
@@ -1896,10 +1890,6 @@ func (s *Store) MoveTask(ctx context.Context, taskID, targetColumnID string, tar
 	if rawSprintID.Valid {
 		current.SprintID = &rawSprintID.String
 	}
-	if rawDueDate.Valid {
-		current.DueDate = &rawDueDate.Time
-	}
-
 	currentColumnID := ""
 	if current.ColumnID != nil {
 		currentColumnID = *current.ColumnID
@@ -2067,7 +2057,7 @@ func (s *Store) DeleteTask(ctx context.Context, taskID string) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var boardID string
 	var columnID sql.NullString

@@ -1,5 +1,22 @@
 .env
 .codex
+.out
 frontend/node_modules
 .gocache/
 _test.png
+
+# Diagram and report files
+close_sprint_flowchart.png
+conceptual_map.dot
+conceptual_map.json
+conceptual_map.mmd
+conceptual_map_report.md
+db_relations.json
+db_relations.mmd
+db_relations.puml
+db_relations_report.md
+
+# Go coverage files
+backend/coverage
+
+tools

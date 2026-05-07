@@ -497,7 +497,7 @@ button {
   background: #fff;
   border: 1px solid #ddd1be;
   border-radius: 10px;
-  padding: 10px;
+  padding: 10px 10px 10px 22px;
   display: grid;
   gap: 9px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
@@ -513,22 +513,42 @@ button {
   box-shadow: inset 0 0 0 2px rgba(15, 118, 110, 0.12);
 }
 
-.task-card--mine::before {
-  content: '';
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 8px;
-  height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #9ac9b9 0%, #5fae95 45%, #2f7f6d 100%);
-  box-shadow: 0 1px 0 rgba(47, 127, 109, 0.24);
+@keyframes shimmer-animation-vertical {
+  0% {
+    background-position: 0 200%;
+  }
+
+  100% {
+    background-position: 0 -200%;
+  }
 }
 
 .task-card--mine {
-  padding-top: 13px;
-  padding-bottom: 24px;
+  --shimmer-color: var(--accent);
 }
+
+.task-card--mine.task-card--due-overdue {
+  --shimmer-color: var(--danger);
+}
+
+.task-card--mine.task-card--due-open {
+  --shimmer-color: #18b44a;
+}
+
+.task-card--mine::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 8px;
+  bottom: 8px;
+  width: 5px;
+  border-radius: 999px;
+  background-size: auto 200%;
+  background-image: linear-gradient(180deg, transparent, var(--shimmer-color), transparent, var(--shimmer-color), transparent);
+  animation: shimmer-animation-vertical 4s infinite linear;
+}
+
+
 
 .task-card--due-overdue {
   border-color: #ff3b3b;
@@ -593,30 +613,29 @@ button {
   justify-content: space-between;
 }
 
-.due-badge {
-  border-radius: 999px;
-  padding: 4px 9px;
-  font-size: 0.8rem;
-  font-weight: 700;
+.date-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-weight: 600;
   white-space: nowrap;
+  color: var(--muted);
 }
 
-.due-badge--overdue {
-  color: #b10000;
-  background: #ffe3e3;
-  border: 1px solid #ff3b3b;
+.date-icon svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
 }
 
-.due-badge--open {
-  color: #0f7b2b;
-  background: #ddffe8;
-  border: 1px solid #1fba4d;
+.date-display--overdue .date-icon {
+  color: var(--danger);
 }
 
-.due-badge--none {
-  color: #586972;
-  background: #edf2f5;
-  border: 1px solid #c8d2d8;
+.date-display--open .date-icon {
+  color: #18b44a;
 }
 
 .action-row select {

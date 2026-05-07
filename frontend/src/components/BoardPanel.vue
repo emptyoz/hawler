@@ -1,4 +1,12 @@
 <script setup>
+const calendarIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+  </svg>
+`;
 defineProps({
   state: { type: Object, required: true },
   selectedBoard: { type: Object, default: null },
@@ -52,10 +60,10 @@ function formatSprintDateRange(startsAt, endsAt) {
   const start = formatSprintDate(startsAt)
   const end = formatSprintDate(endsAt)
 
-  if (start && end) return `Период: ${start} - ${end}`
-  if (start) return `Период: с ${start}`
-  if (end) return `Период: до ${end}`
-  return 'Период: не задан'
+  if (start && end) return `${start} – ${end}`
+  if (start) return start
+  if (end) return end
+  return ''
 }
 
 function parseSprintDate(value) {
@@ -252,16 +260,17 @@ function targetSprintsForTask(task, sprints) {
               <p v-if="task.description" class="task-desc">{{ task.description }}</p>
               <div class="meta-row">
                 <span>{{ formatAssigneeLabel(task.assignee) }}</span>
-                <span
-                  class="due-badge"
-                  :class="{
-                    'due-badge--overdue': getTaskDueState(task.due_date) === 'overdue',
-                    'due-badge--open': getTaskDueState(task.due_date) === 'open',
-                    'due-badge--none': getTaskDueState(task.due_date) === 'none'
-                  }"
-                >
-                  {{ formatTaskDueLabel(task.due_date) }}
-                </span>
+                                <span
+                                  v-if="task.due_date"
+                                  class="date-display"
+                                  :class="{
+                                    'date-display--overdue': getTaskDueState(task.due_date) === 'overdue',
+                                    'date-display--open': getTaskDueState(task.due_date) === 'open'
+                                  }"
+                                >
+                                  <span class="date-icon" v-html="calendarIcon"></span>
+                                  <span>Срок до: {{ formatTaskDueLabel(task.due_date) }}</span>
+                                </span>
               </div>
 
               <div class="action-row task-action-select-row">

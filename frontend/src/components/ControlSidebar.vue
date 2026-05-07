@@ -184,17 +184,11 @@ defineProps({
                 <strong>{{ column.name }}</strong>
                 <p class="field-help">Backlog — системная колонка: переименование, удаление и перенос задач при удалении отключены.</p>
               </div>
-              <div v-else class="column-admin-grid">
+                            <div v-else class="column-admin-grid">
                 <input
                   v-model="columnDraftById[column.id].name"
                   class="column-admin-name"
                   placeholder="Название"
-                  :disabled="!canManageBoard"
-                />
-                <input
-                  v-model="columnDraftById[column.id].kind"
-                  class="column-admin-kind"
-                  placeholder="Ключ: review"
                   :disabled="!canManageBoard"
                 />
                 <input
