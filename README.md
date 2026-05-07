@@ -18,8 +18,11 @@ make up
 Сервисы:
 - frontend: `http://localhost:5173`
 - backend API: `http://localhost:8080`
-- Postgres: `localhost:5432`
+- Postgres: `localhost:55432`
 - migrate: one-shot контейнер для наката `backend/migrations` перед стартом backend
+
+Для подключения к базе с хоста используй `DATABASE_URL`, а внутри Docker Compose -
+`DATABASE_URL_DOCKER`.
 
 Остановить:
 

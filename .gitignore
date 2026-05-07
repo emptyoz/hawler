@@ -1,3 +1,5 @@
 .env
 .codex
 frontend/node_modules
+.gocache/
+_test.png

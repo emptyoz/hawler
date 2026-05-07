@@ -63,12 +63,14 @@ docker compose up --build
 Сервисы после запуска:
 - frontend: `http://localhost:5173`
 - backend API: `http://localhost:8080`
+- Postgres: `localhost:55432`
 - migrate: one-shot сервис для наката миграций перед backend
 
 ## Обязательные env
 
 - `HTTP_ADDR` (по умолчанию `:8080`)
 - `DATABASE_URL`
+- `DATABASE_URL_DOCKER` (для сервисов внутри Docker Compose)
 - `JWT_SECRET`
 - `JWT_TTL` (например `72h`)
 
